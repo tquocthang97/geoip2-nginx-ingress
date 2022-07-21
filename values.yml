@@ -1,0 +1,115 @@
+
+controller:
+  name: controller
+  image:
+    chroot: false
+    registry: registry.k8s.io
+    image: ingress-nginx/controller
+    tag: "v1.2.1"
+    digest: sha256:5516d103a9c2ecc4f026efbd4b40662ce22dc1f824fb129ed121460aaa5c47f8
+    digestChroot: sha256:d301551cf62bc3fb75c69fa56f7aa1d9e87b5079333adaf38afe84d9b7439355
+    pullPolicy: IfNotPresent
+    runAsUser: 101
+    allowPrivilegeEscalation: true
+
+  containerName: controller
+
+  containerPort:
+    http: 80
+    https: 80
+    tohttps: 2443
+
+  config: 
+    enable-real-ip: true
+    use-geoip2: true
+    server-snippet: |
+      if ($allowed_country = no) {
+        return 503;
+      }
+    http-snippet: |
+      server {
+        listen 2443;
+        return 308 https://$host$request_uri;
+      }
+        geoip2_proxy_recursive on;
+        geoip2 /etc/nginx/geoip/geoip2/GeoLite2-Country.mmdb {
+          $geoip2_country_code source=$remote_addr country iso_code;
+          $geoip2_country_name source=$remote_addr country names en;
+          $geoip2_continent_code source=$remote_addr continent code;
+          $geoip2_continent_name source=$remote_addr continent names en;
+        }
+        map $geoip2_country_code  $allowed_country {
+          default no;
+          VN yes; 
+        }       
+    proxy-real-ip-cidr: xxxxxxxx
+    use-forwarded-headers: "true"
+    log-format-escape-json: "true"
+    log-format-upstream: '{"time_local": "$time_local", "remote_addr": "$remote_addr", "cache_status": "$sent_http_x_cache", "scheme": "$scheme", "host": "$host", "request_method": "$request_method", "uri": "$request_uri", "http_status": $status, "referer": "$http_referer", "tcp_rtt": $tcpinfo_rtt, "body_bytes_sent": $bytes_sent, "request_time": $request_time, "user_agent": "$http_user_agent", "upstream_addr": "$upstream_addr", "request_body": "$request_body","upstream_response_time":"$upstream_response_time", "upstream_connect_time":"$upstream_connect_time", "upstream_header_time":"$upstream_header_time"}'
+
+
+  dnsPolicy: ClusterFirst
+
+  sysctls: {}
+  maxmindLicenseKey: "xxxxxxxxxxxx"
+  extraEnvs: []
+  kind: DaemonSet
+
+  resources:
+  ##  limits:
+  ##    cpu: 100m
+  ##    memory: 90Mi
+    requests:
+      cpu: 100m
+      memory: 90Mi
+
+  service:
+    enabled: true
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: xxxxxxxxxx
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    externalTrafficPolicy: "Local"
+    ports:
+      http: 80
+      https: 443
+    targetPorts:
+      http: tohttps
+      https: http
+    type: LoadBalancer
+
+  extraVolumeMounts:
+    - name: geoip
+      mountPath: /etc/nginx/geoip/geoip2
+  extraVolumes:
+    - name: geoip
+      emptyDir: {}
+
+  extraInitContainers: 
+    - name: download-geoip2
+      image: busybox
+      command: ['sh', '-c', 'for component in GeoLite2-Country GeoLite2-City GeoLite2-ASN ; do wget -O ${component}.tar.gz   "https://download.maxmind.com/app/geoip_download?edition_id=${component}&license_key=g3xUIyTS643JtDPP&suffix=tar.gz" ; tar -xzf ${component}.tar.gz -C /home/ --strip=1 ; done']
+      volumeMounts:
+        - name: geoip
+          mountPath: /home
+
+  metrics:
+    port: 10254
+    # if this port is changed, change healthz-port: in extraArgs: accordingly
+    enabled: true
+    service:
+      annotations: 
+       prometheus.io/scrape: "true"
+       prometheus.io/port: "10254"
+      # loadBalancerIP: ""
+      servicePort: 10254
+      type: ClusterIP
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - /wait-shutdown
+imagePullSecrets: []
+# - name: secretName
