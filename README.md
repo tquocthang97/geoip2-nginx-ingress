@@ -1,0 +1,1 @@
+# geoip2-nginx-ingress
