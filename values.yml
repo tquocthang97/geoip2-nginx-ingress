@@ -99,10 +99,13 @@ controller:
     - name: geoip
       emptyDir: {}
 
-  extraInitContainers: 
+  extraInitContainers:
     - name: download-geoip2
       image: busybox
-      command: ['sh', '-c', 'for component in GeoLite2-Country GeoLite2-City GeoLite2-ASN ; do wget -O ${component}.tar.gz   "https://download.maxmind.com/app/geoip_download?edition_id=${component}&license_key=xxxxxxxxxx&suffix=tar.gz" ; tar -xzf ${component}.tar.gz -C /home/ --strip=1 ; done']
+      env:
+        - name: LICENSE_KEY
+          value: xxxxxxx
+      command: ['sh', '-c', 'for component in GeoLite2-Country GeoLite2-City GeoLite2-ASN ; do wget -O ${component}.tar.gz   "https://download.maxmind.com/app/geoip_download?edition_id=${component}&license_key=${LICENSE_KEY}&suffix=tar.gz" ; tar -xzf ${component}.tar.gz -C /home/ --strip=1 ; done']
       volumeMounts:
         - name: geoip
           mountPath: /home
