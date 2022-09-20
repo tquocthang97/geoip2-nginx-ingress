@@ -6,7 +6,7 @@ Install Nginx Ingress on EKS with features, use Helm to Install:
 
 ```
 - Get MaxMind Lincese on https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
-and input to values `LICENSE_KEY` and  `KXqknCJtN7jd2hir`
+and input to values `LICENSE_KEY` and  `maxmindLicenseKey`
 - Change annotations `service.beta.kubernetes.io/aws-load-balancer-ssl-cert`
 ```
 ```
