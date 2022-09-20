@@ -1,8 +1,14 @@
 # geoip2-nginx-ingress
-Install Nginx Ingress on EKS with features, use Helm to Install:
+
+Install Nginx Ingress on EKS with features:
 - Terminate HTTPS traffic on Amazon EKS workloads with ACM
 - Use GeoIP2 for block geo country location
 - Tunning Nginx Ingress for highload traffic
+
+Installation system requirements
+- Helm
+- ACM (AWS Certificate Manager)
+- EKS Cluster
 
 ```
 - Get MaxMind Lincese on https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
