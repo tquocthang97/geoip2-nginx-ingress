@@ -42,9 +42,21 @@ controller:
           default no;
           VN yes; 
         }       
-    proxy-real-ip-cidr: xxxxxxxx
+    proxy-real-ip-cidr: 30.0.0.0/16
     use-forwarded-headers: "true"
     log-format-escape-json: "true"
+    worker-processes: "15"
+    worker-cpu-affinity: auto
+    max-worker-connections: "65536"
+    proxy-body-size: 20m
+    proxy-connect-timeout: "3"
+    proxy-read-timeout: "5"
+    proxy-send-timeout: "5"    
+    upstream-keepalive-connections: "300"
+    upstream-keepalive-requests: "1000"
+    upstream-keepalive-timeout: "900"
+    keep-alive: "900"
+    keep-alive-requests: "10000"
     log-format-upstream: '{"time_local": "$time_local", "remote_addr": "$remote_addr", "cache_status": "$sent_http_x_cache", "scheme": "$scheme", "host": "$host", "request_method": "$request_method", "uri": "$request_uri", "http_status": $status, "referer": "$http_referer", "tcp_rtt": $tcpinfo_rtt, "body_bytes_sent": $bytes_sent, "request_time": $request_time, "user_agent": "$http_user_agent", "upstream_addr": "$upstream_addr", "request_body": "$request_body","upstream_response_time":"$upstream_response_time", "upstream_connect_time":"$upstream_connect_time", "upstream_header_time":"$upstream_header_time"}'
 
 
