@@ -1,5 +1,5 @@
 # geoip2-nginx-ingress
-Install Nginx Ingress with features:
+Install Nginx Ingress on EKS with features:
 - Terminate HTTPS traffic on Amazon EKS workloads with ACM
 - Use GeoIP2 for block geo country location
 - Tunning Nginx Ingress for highload traffic
